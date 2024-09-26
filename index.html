@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Jacquarda+Bastarda+9&family=Sofadi+One&display=swap"
+      rel="stylesheet"
+    />
+    <title>Game with Hidden Results</title>
+    <style>
+      body {
+        font-family: "Sofadi One", system-ui;
+        background-color: #f7f7f7;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background-image: url(https://images.pexels.com/photos/5240547/pexels-photo-5240547.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1);
+        background-repeat: no-repeat;
+        background-size: cover;
+      }
+      .container {
+        background-color: white;
+        padding: 20px 45px;
+        border-radius: 12px;
+        text-align: center;
+        max-width: 500px;
+        width: 100%;
+        height: 550px;
+      }
+      h1 {
+        color: #007bff;
+        text-transform: uppercase;
+        font-weight: bold;
+      }
+      .result {
+        font-size: 25px;
+        margin: 50px 0;
+        display: none;
+      }
+      .empty-page {
+        display: none; /* Initially hidden */
+        font-size: 30px;
+        color: #007bff;
+      }
+      .end-message {
+        display: none; /* Initially hidden */
+        font-size: 30px;
+        color: #007bff;
+        margin-top: 20px;
+      }
+      button {
+        padding: 20px 25px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 18px;
+        width: 60%;
+        margin: 25px auto;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      .input-section {
+        margin-bottom: 20px;
+      }
+      input[type="text"],
+      input[type="number"] {
+        width: 100%;
+        padding: 15px;
+        margin: 25px 0;
+        border-radius: 5px;
+        border: none;
+        outline: none;
+        border-bottom: 3px solid #ccc;
+        font-size: 20px;
+        text-transform: capitalize;
+        transition: 0.3s all;
+      }
+      .overlay {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgb(0 0 0 / 60%);
+        z-index: -1;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="overlay"></div>
+    <div class="container">
+      <h1>spy</h1>
+
+      <div class="input-section" id="inputSection">
+        <input type="text" id="wordA" placeholder="similar sentence" />
+        <input type="text" id="wordB" placeholder="different sentence" />
+        <input type="number" id="numOfPlayers" placeholder="numOfPlayers" />
+        <button id="startButton" onclick="startGame()">GO</button>
+      </div>
+
+      <div class="result" id="result"></div>
+      <div class="empty-page" id="emptyPage">Wait for the next player...</div>
+      <div class="end-message" id="endMessage">Time to Start!</div>
+
+      <button id="nextButton" style="display: none" onclick="nextPlayer()">
+        Next Player
+      </button>
+    </div>
+
+    <script>
+      let players = [];
+      let currentPlayerIndex = 0;
+
+      function startGame() {
+        // جلب القيم المدخلة من المستخدم
+        let wordA = document.getElementById("wordA").value || "A";
+        let wordB = document.getElementById("wordB").value || "B";
+        let numOfPlayers = parseInt(
+          document.getElementById("numOfPlayers").value
+        );
+
+        // التحقق من صحة عدد اللاعبين
+        if (isNaN(numOfPlayers) || numOfPlayers < 2) {
+          alert("من فضلك أدخل عدد صحيح أكبر من 1");
+          return;
+        }
+
+        // أنشئ مصفوفة تحتوي على الكلمة A بعدد اللاعبين ناقص واحد
+        players = new Array(numOfPlayers - 1).fill(wordA);
+
+        // اختيار موضع عشوائي للكلمة B
+        let randomIndex = Math.floor(Math.random() * numOfPlayers);
+
+        // إدخال الكلمة B في الموضع العشوائي
+        players.splice(randomIndex, 0, wordB);
+
+        // إخفاء جزء الإدخال
+        document.getElementById("inputSection").style.display = "none";
+
+        // البدء بعرض اللاعب الأول
+        showNextPlayer();
+      }
+
+      function showNextPlayer() {
+        // إذا انتهينا من عرض جميع اللاعبين
+        if (currentPlayerIndex >= players.length) {
+          document.getElementById("result").style.display = "none";
+          document.getElementById("nextButton").style.display = "none";
+
+          // عرض رسالة النهاية
+          document.getElementById("endMessage").style.display = "block";
+          return;
+        }
+
+        // عرض النتيجة لكل لاعب
+        let resultElement = document.getElementById("result");
+        resultElement.innerHTML =
+          "Player " +
+          (currentPlayerIndex + 1) +
+          ": " +
+          players[currentPlayerIndex];
+        resultElement.style.display = "block";
+
+        // إخفاء صفحة فارغة
+        document.getElementById("emptyPage").style.display = "none";
+
+        // إظهار زر اللاعب التالي
+        document.getElementById("nextButton").style.display = "block";
+      }
+
+      function nextPlayer() {
+        // إخفاء نتيجة اللاعب
+        document.getElementById("result").style.display = "none";
+
+        // إظهار صفحة فارغة
+        let emptyPage = document.getElementById("emptyPage");
+        emptyPage.style.display = "block";
+
+        // الانتقال لللاعب التالي بعد الضغط على الزر
+        currentPlayerIndex++; // زيادة المؤشر للانتقال لللاعب التالي
+
+        // عرض صفحة الانتظار لمدة 1 ثانية ثم إظهار اللاعب التالي
+        setTimeout(() => {
+          emptyPage.style.display = "none"; // إخفاء صفحة الانتظار
+          showNextPlayer(); // عرض اللاعب التالي
+        }, 2000); // تغيير الفترة الزمنية إذا كنت ترغب في ذلك
+      }
+    </script>
+  </body>
+</html>
